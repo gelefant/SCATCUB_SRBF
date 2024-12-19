@@ -6,7 +6,7 @@ _Roberto Cavoretto, Alessandra De Rossi, Giacomo Elefante and Alvise Sommariva -
 
 Moreover there are some demos to reproduce the various numerical experiments included in the paper.
 
-**It is necessary the use of the package CHEBFUN to run the code**
+**It is necessary to use the package CHEBFUN to run the code**
 
 In particular:
  ```
