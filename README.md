@@ -11,8 +11,8 @@ Moreover there are some demos to reproduce the various numerical experiments inc
 In particular:
  ```
 1. demo_adaptive  - demo for the numerical experiments on the adaptive algorithm for integration. It might include two input parameters f_type, domain_type
-                    domain_type : to choose the spherical polygon and it takes values 1,2,3 - 1: Africa region; 2: Australian region; 3: America region
-                    f_type      : to choose the integrand function it goes from 1 to 33
+                     domain_type : to choose the spherical polygon and it takes values 1,2,3 - 1: Africa region; 2: Australian region; 3: America region
+                     f_type      : to choose the integrand function it goes from 1 to 33
                                   the test functions of the paper are:     1. Africa region    : f1: 28, f2: 27, f3: 29
                                                                            2. Australia region : f1: 30, f2: 27, f3: 31
                                                                            3. America regions  : f1: 32, f2: 27, f3: 33
