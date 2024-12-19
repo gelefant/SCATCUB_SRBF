@@ -15,7 +15,7 @@ In particular:
                      f_type      : to choose the integrand function it goes from 1 to 33
                                   the test functions of the paper are:     1. Africa region    : f1: 28, f2: 27, f3: 29
                                                                            2. Australia region : f1: 30, f2: 27, f3: 31
-                                                                           3. America regions  : f1: 32, f2: 27, f3: 33
+                                                                           3. America region   : f1: 32, f2: 27, f3: 33
 ```
 ```
   2. demo_cond   - demo for the numerical experiments on the conditioning of the Vandermonde-like matrix. It might include 4 input parameters rbf_type, domain, do_plot, isdeg
@@ -30,7 +30,7 @@ In particular:
                      f_type      : to choose the integrand function it goes from 1 to 33
                                    the test functions of the paper are:     1. Africa region    : f1: 28, f2: 27, f3: 29
                                                                             2. Australia region : f1: 30, f2: 27, f3: 31
-                                                                            3. America regions  : f1: 32, f2: 27, f3: 33
+                                                                            3. America region   : f1: 32, f2: 27, f3: 33
                      rbf_type    : to choose the rbf basis and it takes value 1 or 2 - 1:  RP; 2: TPS
 ```
 ```
@@ -39,7 +39,7 @@ In particular:
                        f_type      : to choose the integrand function it goes from 1 to 33
                                      the test functions of the paper are:     1. Africa region    : f1: 28, f2: 27, f3: 29
                                                                               2. Australia region : f1: 30, f2: 27, f3: 31
-                                                                              3. America regions  : f1: 32, f2: 27, f3: 33
+                                                                              3. America region   : f1: 32, f2: 27, f3: 33
                        rbf_type    : to choose the rbf basis and it takes value 1 or 2 - 1:  RP; 2: TPS
 ```
 ```
