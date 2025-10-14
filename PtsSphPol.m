@@ -41,7 +41,12 @@ function Y = PtsSphPol(N,pts_type,vertices)
 % .................... compute barycenter vertices ........................
 
 R=norm(vertices(1,:)); vertices=vertices/R;
-CC=mean(vertices,1); CC=CC/norm(CC);
+if  anynan(vertices(:,1))
+    id = 1:size(vertices,1); idx = isnan(vertices(:,1)); nanidx = id(idx');
+    CC=mean(vertices(1:(nanidx-1),:),1); CC=CC/norm(CC);
+else
+    CC=mean(vertices,1); CC=CC/norm(CC);
+end
 
 % ................ rotation matrix centroid to north pole .................
 

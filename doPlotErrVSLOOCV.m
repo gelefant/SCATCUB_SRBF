@@ -1,18 +1,18 @@
 function doPlotErrVSLOOCV(domain_type,rbf_type, f_type) 
 
 if nargin < 1
-    domain_type = 1;
+    domain_type = 4;
 end
 
 if nargin < 2
-    rbf_type = 1;
+    rbf_type = 2;
 end
 
 if nargin< 3
-    f_type = 27;
+    f_type = 38;
 end
 
-Nset = 1:2;
+Nset = 1:16;
 % Defining the test function
 [f,~] = test_functions(f_type);
 
@@ -23,10 +23,19 @@ switch domain_type
         domain = coastline_australia(0);
     case 3
         domain = coastline_america;
+    case 4
+        domain = holepoly;
 end
 
 Vdeg = domain.Vertices;
+if domain_type == 4
+    V = [2*Vdeg(:,1)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),2*Vdeg(:,2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),(1-Vdeg(:,1).^2-Vdeg(:,2).^2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2)];
+Vx = V(:,1); Vy = V(:,2); Vz=V(:,3)+0.35;
+V = [Vx,Vy,Vz]./vecnorm([Vx,Vy,Vz],2,2);
+Vx = V(:,1); Vy = V(:,2); Vz = V(:,3);
+else
 [Vx,Vy,Vz] = sph2cart(deg2rad(Vdeg(:,1)),deg2rad(Vdeg(:,2)),1);
+end
 vertices = [Vx,Vy,Vz];
 
 XWC=cub_sphpgon(1,vertices);
@@ -108,4 +117,5 @@ semilogy(Nset*100,err_rel(IndicesMat),'ko','MarkerSize',7,'MarkerFaceColor','k')
 semilogy(Nset*100,minavgEFCOND,'ro','MarkerSize',7,'MarkerEdgeColor','r')
 semilogy(Nset*100,err_rel(IndicesMatCOND),'ro','MarkerSize',7,'MarkerEdgeColor','r')
 legend('1','2','3','4','5','6','7','8','Location','NorthEast')%,'FontSize',7)
-axis([Nset(1)*100 Nset(end)*100 1e-10 1])
+axis([Nset(1)*100 Nset(end)*100 1e-10 1e-1])
+ 

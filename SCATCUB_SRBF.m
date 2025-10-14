@@ -88,7 +88,7 @@ condV = zeros(size(n));
 for i = 1:length(n)
     IM=phi(n(i),DM_data);
     condV(i) = condest(IM);
-    if condV(i)>1/eps %1e+20 % 1/eps
+    if condV(i)>1/eps %1/eps %1e+20 
         continue
     end
     invIM = pinv(IM);

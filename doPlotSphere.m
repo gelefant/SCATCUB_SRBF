@@ -1,7 +1,7 @@
 function doPlotSphere(domain_type,f_type)
 
-if nargin<2 f_type = 29; end
-if nargin<1 domain_type = 1; end
+if nargin<2 f_type = 38; end
+if nargin<1 domain_type = 4; end
 
 Neval = 150000;
 N = 100000;
@@ -13,12 +13,20 @@ switch domain_type
         domain = coastline_australia(0);
     case 3
         domain = coastline_america;
+    case 4
+        domain = holepoly;
 end
 
 Vdeg = domain.Vertices;
 
+if domain_type == 4
+    V = [2*Vdeg(:,1)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),2*Vdeg(:,2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),(1-Vdeg(:,1).^2-Vdeg(:,2).^2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2)];
+Vx = V(:,1); Vy = V(:,2); Vz=V(:,3)+0.35;
+V = [Vx,Vy,Vz]./vecnorm([Vx,Vy,Vz],2,2);
+Vx = V(:,1); Vy = V(:,2); Vz = V(:,3);
+else
 [Vx,Vy,Vz] = sph2cart(deg2rad(Vdeg(:,1)),deg2rad(Vdeg(:,2)),1);
-
+end
 vertices = [Vx,Vy,Vz];
 
 [f,~]=test_functions(f_type);
@@ -53,4 +61,6 @@ switch domain_type
         view(-130,-10)
     case 3
         view(10,10)
+    case 4
+        view(50,25)
 end

@@ -43,13 +43,12 @@ function [I,Ierr,flag,Ihigh,iters,tri_vertices,tri_conn_list,L1_vertices]=...
 
 %fprintf('\n adaptive_cub_sphpgon');
 
-
+multiple_domain = 0;
 
 % ................. Troubleshooting and settings ..........................
 
 if nargin < 3, atol=10^(-6); end
 if nargin < 4, rtol=10^(-6); end
-tri_meth=2; % Triangulation method.
 
 % max number of triangles in which the domain is partitioned
 max_triangles=1000;
@@ -120,13 +119,16 @@ first_index=1;
 if length(subdom_index) == 0
     first_index=1;
     last_index=size(vertices,1);
-else
+elseif multiple_domain == 1
     if subdom_index(end) == size(vertices,1)
         subdom_index=subdom_index(1:end-1);
     end
     
-    first_index=[1 subdom_index+1];
-    last_index=[subdom_index-1 size(vertices,1)];
+    first_index=[1 subdom_index-1];
+    last_index=[subdom_index+1 size(vertices,1)];
+else
+    first_index=1;
+    last_index=size(vertices,1);
 end
 
 
@@ -450,7 +452,12 @@ function [tri_vertices,tri_conn_list]=triangulate_sphpgon_tg(vertices)
 % .................... compute barycenter vertices ........................
 
 R=norm(vertices(1,:)); vertices=vertices/R;
-CC=mean(vertices); CC=CC/norm(CC);
+if  anynan(vertices(:,1))
+    id = 1:size(vertices,1); idx = isnan(vertices(:,1)); nanidx = id(idx');
+    CC=mean(vertices(1:(nanidx-1),:),1); CC=CC/norm(CC);
+else
+    CC=mean(vertices,1); CC=CC/norm(CC);
+end
 
 % .................... rotation matrix to the north pole ..................
 
@@ -480,7 +487,7 @@ PG = simplify(PG);
 
 tri = triangulation(PG);
 
-tri_vertices_NPm=PG.Vertices;
+tri_vertices_NPm=tri.Points;
 
 phi = @(x,y) [2*x./(1+x.^2+y.^2), 2*y./(1+x.^2+y.^2), (1-x.^2-y.^2)./(1+x.^2+y.^2)];
 tri_vertices_NPm=phi(tri_vertices_NPm(:,1),tri_vertices_NPm(:,2));

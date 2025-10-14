@@ -50,6 +50,8 @@ function [XW,tri_vertices,tri_conn_list]=cub_sphpgon(n,vertices)
 
 if norm(vertices(1,:)-vertices(end,:))==0,vertices=vertices(1:end-1,:);end
 
+multiple_domain = 0;
+
 % ........ Procedure start up, data stored in structures ............
 
 %..........................................................................
@@ -77,15 +79,17 @@ first_index=1;
 if length(subdom_index) == 0
     first_index=1;
     last_index=size(vertices,1);
-else
+elseif multiple_domain == 1
     if subdom_index(end) == size(vertices,1)
         subdom_index=subdom_index(1:end-1);
     end
     
-    first_index=[1 subdom_index+1];
-    last_index=[subdom_index-1 size(vertices,1)];
+    first_index=[1 subdom_index-1];
+    last_index=[subdom_index+1 size(vertices,1)];
+else
+    first_index=1;
+    last_index=size(vertices,1);
 end
-
 
 
 % Computation of cubature rule over spherical polygon.
@@ -111,6 +115,70 @@ end
 
 
 
+% function [tri_vertices,tri_conn_list]=triangulate_sphpgon_tg(vertices)
+% 
+% %--------------------------------------------------------------------------
+% % Object:
+% % In this routine we determine a triangulation of the spherical polygon
+% % with M vertices described in cartesian coordinates the M x 3 matrix
+% % "vertices".
+% % The points of the triangulation are stored in "tri_vertices", while the
+% % K x 3 connectivity matrix is described in "tri_conn_list".
+% % In particular the k-th row of "tri_conn_list" consists of the indices of
+% % vertices of the k-th spherical triangle, w.r.t. "tri_vertices".
+% %--------------------------------------------------------------------------
+% 
+% if size(vertices,1) == 3
+%     tri_vertices=vertices; tri_conn_list=[1 2 3]; return;
+% end
+% 
+% % .................... compute barycenter vertices ........................
+% 
+% R=norm(vertices(1,:)); vertices=vertices/R;
+% CC=mean(vertices); CC=CC/norm(CC);
+% 
+% % ................ rotation matrix centroid to north pole .................
+% 
+% [az,el,r] = cart2sph(CC(1),CC(2),CC(3));
+% phi=az; theta=pi/2-el;
+% cp=cos(phi); sp=sin(phi); ct=cos(theta); st=sin(theta);
+% R1=[ct 0 -st; 0 1 0; st 0 ct]; R2=[cp sp 0; -sp cp 0; 0 0 1];
+% rotmat=R1*R2; inv_rotmat=rotmat';
+% 
+% % ........................ rotate vertices ................................
+% 
+% vertices_NP=(rotmat*vertices')';
+% 
+% % ....... map radially vertices to plane tangent to north pole ............
+% 
+% XX_NP=vertices_NP(:,1); YY_NP=vertices_NP(:,2); ZZ_NP=vertices_NP(:,3);
+% rat=1./ZZ_NP;
+% 
+% XX_NPm=rat.*XX_NP; YY_NPm=rat.*YY_NP; ZZ_NPm=ones(size(XX_NPm));
+% 
+% % ............ polyshape of projected polygon to North Pole ...............
+% 
+% PG = polyshape(XX_NPm,YY_NPm);
+% 
+% % ............ triangulation of projected polygon to North Pole ...........
+% 
+% tri = triangulation(PG);
+% 
+% tri_vertices_NPm=PG.Vertices;
+% tri_vertices_NPm=[tri_vertices_NPm ones(size(tri_vertices_NPm,1),1)];
+% rads=sqrt((tri_vertices_NPm(:,1)).^2+(tri_vertices_NPm(:,2)).^2+1);
+% 
+% % ......................... output data ...................................
+% 
+% % Once we have a triangulation at the North-Pole, the points with the same
+% % triangulation indices on the spherical polygon determine its
+% % triangulation.
+% tri_vertices_NP=tri_vertices_NPm./rads;
+% tri_vertices=R*(inv_rotmat*tri_vertices_NP')';
+% tri_conn_list=tri.ConnectivityList;
+% 
+
+
 function [tri_vertices,tri_conn_list]=triangulate_sphpgon_tg(vertices)
 
 %--------------------------------------------------------------------------
@@ -124,16 +192,19 @@ function [tri_vertices,tri_conn_list]=triangulate_sphpgon_tg(vertices)
 % vertices of the k-th spherical triangle, w.r.t. "tri_vertices".
 %--------------------------------------------------------------------------
 
-if size(vertices,1) == 3
-    tri_vertices=vertices; tri_conn_list=[1 2 3]; return;
-end
 
 % .................... compute barycenter vertices ........................
 
 R=norm(vertices(1,:)); vertices=vertices/R;
-CC=mean(vertices); CC=CC/norm(CC);
+if  anynan(vertices(:,1))
+    id = 1:size(vertices,1); idx = isnan(vertices(:,1)); nanidx = id(idx');
+    CC=mean(vertices(1:(nanidx-1),:),1); CC=CC/norm(CC);
+else
+    CC=mean(vertices,1); CC=CC/norm(CC);
+end
 
-% ................ rotation matrix centroid to north pole .................
+
+% .................... rotation matrix to the north pole ..................
 
 [az,el,r] = cart2sph(CC(1),CC(2),CC(3));
 phi=az; theta=pi/2-el;
@@ -148,32 +219,29 @@ vertices_NP=(rotmat*vertices')';
 % ....... map radially vertices to plane tangent to north pole ............
 
 XX_NP=vertices_NP(:,1); YY_NP=vertices_NP(:,2); ZZ_NP=vertices_NP(:,3);
-rat=1./ZZ_NP;
+rat=1./(1+ZZ_NP);
 
 XX_NPm=rat.*XX_NP; YY_NPm=rat.*YY_NP; ZZ_NPm=ones(size(XX_NPm));
 
 % ............ polyshape of projected polygon to North Pole ...............
 
 PG = polyshape(XX_NPm,YY_NPm);
+PG = simplify(PG);
 
 % ............ triangulation of projected polygon to North Pole ...........
 
 tri = triangulation(PG);
 
-tri_vertices_NPm=PG.Vertices;
-tri_vertices_NPm=[tri_vertices_NPm ones(size(tri_vertices_NPm,1),1)];
-rads=sqrt((tri_vertices_NPm(:,1)).^2+(tri_vertices_NPm(:,2)).^2+1);
+tri_vertices_NPm=tri.Points;
+
+phi = @(x,y) [2*x./(1+x.^2+y.^2), 2*y./(1+x.^2+y.^2), (1-x.^2-y.^2)./(1+x.^2+y.^2)];
+tri_vertices_NPm=phi(tri_vertices_NPm(:,1),tri_vertices_NPm(:,2));
 
 % ......................... output data ...................................
 
-% Once we have a triangulation at the North-Pole, the points with the same
-% triangulation indices on the spherical polygon determine its
-% triangulation.
-tri_vertices_NP=tri_vertices_NPm./rads;
-tri_vertices=R*(inv_rotmat*tri_vertices_NP')';
+%tri_vertices_NP=tri_vertices_NPm./rads;
+tri_vertices=R*(inv_rotmat*tri_vertices_NPm')';
 tri_conn_list=tri.ConnectivityList;
-
-
 
 
 

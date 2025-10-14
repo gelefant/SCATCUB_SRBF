@@ -1,6 +1,6 @@
 function demo_adaptive(f_type,domain_type)
 
-if nargin<2 domain_type = 2; end
+if nargin<2 domain_type = 4; end
 
 switch domain_type
     case 1
@@ -9,15 +9,23 @@ switch domain_type
         domain = coastline_australia(0);
     case 3
         domain = coastline_america;
+    case 4
+        domain = holepoly;
 end
 
 Vdeg = domain.Vertices;
 
+if domain_type == 4
+    V = [2*Vdeg(:,1)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),2*Vdeg(:,2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),(1-Vdeg(:,1).^2-Vdeg(:,2).^2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2)];
+Vx = V(:,1); Vy = V(:,2); Vz=V(:,3)+0.35;
+V = [Vx,Vy,Vz]./vecnorm([Vx,Vy,Vz],2,2);
+Vx = V(:,1); Vy = V(:,2); Vz = V(:,3);
+else
 [Vx,Vy,Vz] = sph2cart(deg2rad(Vdeg(:,1)),deg2rad(Vdeg(:,2)),1);
-
+end
 vertices = [Vx,Vy,Vz];
 
-rtol = 1e-14;
+rtol = 1e-8;
 atol = rtol;
 
 if nargin<1
@@ -75,7 +83,7 @@ if nargin<1
     hold off
     fprintf('\n \n');
 else
-    ade = 50;
+    ade = 200;
 
     [f,~]=test_functions(f_type);
     test = 20;
@@ -92,6 +100,7 @@ else
     fnodesC=feval(f,XWC(:,1),XWC(:,2),XWC(:,3));
     wC=XWC(:,4);
     I=wC'*fnodesC;
+    AE = abs(Iadapt-I);
     RE = abs(Iadapt-I)/abs(I);
 
     fprintf('\n \t ------------------------------');
@@ -103,6 +112,7 @@ else
     fprintf ("\n \t .......... errors........... ") ;
     fprintf ("\n \t I  : %1.5e ", I) ;
     fprintf ("\n \t Ia : %1.5e ", Iadapt) ;
+    fprintf ("\n \t AE : %1.5e ", AE) ;
     fprintf ("\n \t RE : %1.5e \n ", RE) ;
     fprintf ("\n \t -----------------------------\n") ;
 end

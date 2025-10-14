@@ -1,12 +1,14 @@
 function demo_condV(rbf_type, domain, do_plot, isdeg)
 
 if nargin < 1
-    rbf_type = 1;
+    rbf_type = 2;
 end
 
 if nargin < 2
-    domain = coastline_africa(0);
+    % domain = coastline_africa(0);
 %     domain = coastline_australia(0);
+domain_type =4;
+domain = holepoly;
 end
 
 if nargin < 3
@@ -14,20 +16,24 @@ if nargin < 3
 end
 
 if nargin < 4
-    isdeg = 1; % 1 if coordinates are in degree, 0 if are in radiant
+    isdeg = 0; % 1 if coordinates are in degree, 0 if are in radiant
 end
 
 % Parameters
 Nset = 100:100:1600;
 
 % Extracting the vertices of the domain
-vertices = domain.Vertices;
+Vdeg = domain.Vertices;
 
-if isdeg == 1
-    % Mapping coordinates in radiant
-    [Vx,Vy,Vz] = sph2cart(deg2rad(vertices(:,1)),deg2rad(vertices(:,2)),1);
-    vertices = [Vx,Vy,Vz];
+if isdeg 
+    Vdeg = deg2rad(Vdeg(:,1),Vdeg(:,2));
 end
+
+V = [2*Vdeg(:,1)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),2*Vdeg(:,2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),(1-Vdeg(:,1).^2-Vdeg(:,2).^2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2)];
+Vx = V(:,1); Vy = V(:,2); Vz=V(:,3)+0.35;
+V = [Vx,Vy,Vz]./vecnorm([Vx,Vy,Vz],2,2);
+Vx = V(:,1); Vy = V(:,2); Vz = V(:,3);
+vertices = [Vx,Vy,Vz];
 
 switch rbf_type
     case 1
@@ -69,6 +75,6 @@ semilogy(Nset,condV(5,:),'Color',[0 0.4470 0.7410])
 semilogy(Nset,condV(6,:),'Color',[0.8500 0.3250 0.0980])
 semilogy(Nset,condV(7,:),'Color',[0.9290 0.6940 0.1250])
 semilogy(Nset,condV(8,:),'Color',[0.6350 0.0780 0.1840])
-legend('1','2','3','4','5','6','7','8','Location','SouthEast')
+legend('1','2','3','4','5','6','7','8','Location','NorthWest')
 axis([Nset(1) Nset(end) 1 1e30])
 end

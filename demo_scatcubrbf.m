@@ -1,12 +1,14 @@
 function demo_scatcubrbf(testfun, domain, verbose)
 
 if nargin<1
-    testfun = 28;
+    testfun = 36;
 end
 
 if nargin<2
-    domain = coastline_africa(0);
-%     domain = coastline_australia(0);
+    % domain = coastline_africa(0);
+    % domain = coastline_australia(0);
+    domain_type = 4;
+    domain = holepoly;
 end
 
 if nargin<3
@@ -26,7 +28,15 @@ rbf_type = 1;
 
 % Defining the vertices of the spherical polygon
 Vdeg = domain.Vertices;
+
+if domain_type == 4
+    V = [2*Vdeg(:,1)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),2*Vdeg(:,2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2),(1-Vdeg(:,1).^2-Vdeg(:,2).^2)./(1+Vdeg(:,1).^2+Vdeg(:,2).^2)];
+Vx = V(:,1); Vy = V(:,2); Vz=V(:,3)+0.35;
+V = [Vx,Vy,Vz]./vecnorm([Vx,Vy,Vz],2,2);
+Vx = V(:,1); Vy = V(:,2); Vz = V(:,3);
+else
 [Vx,Vy,Vz] = sph2cart(deg2rad(Vdeg(:,1)),deg2rad(Vdeg(:,2)),1);
+end
 vertices = [Vx,Vy,Vz];
 
 % Defining scattered centers in the spherical cap containing the spherical
@@ -35,8 +45,11 @@ centers = PtsSphPol(N,'H',vertices);
 
 % Evaluating the centers
 fdata = f(centers(:,1),centers(:,2),centers(:,3));
-
+if domain_type == 4
+I = SCATCUB_SRBF2(centers, fdata, domain, rbf_type, 0, verbose);
+else
 I = SCATCUB_SRBF(centers, fdata, domain, rbf_type, 1, verbose);
+end
 
 atol=10^(-12);
 rtol=atol;
